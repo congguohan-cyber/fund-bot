@@ -45,31 +45,8 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           FORCE_ANALYSIS: ${{ github.event.inputs.force || 'false' }}
         run: |
-          echo "=== 开始分析 ==="
-          echo "PYTHONPATH=."
           mkdir -p data
-          python -u -c "
-          import os, sys, traceback
-          sys.path.insert(0, '.')
-          print(f'CWD: {os.getcwd()}')
-          print(f'Python: {sys.version}')
-          try:
-              from database import init_database
-              init_database()
-              print('DB OK')
-              from orchestrator import orchestrator
-              force = os.environ.get('FORCE_ANALYSIS', 'false').lower() == 'true'
-              print(f'Force: {force}')
-              report = orchestrator.run_daily_analysis(force=force)
-              if report:
-                  print('=== 分析成功 ===')
-              else:
-                  print('=== 跳过（非交易日或已分析）===')
-          except Exception:
-              traceback.print_exc()
-              sys.exit(1)
-          "
-          echo "Exit code: $?"
+          python run_analysis.py
 
       - name: 完成
         if: always()
