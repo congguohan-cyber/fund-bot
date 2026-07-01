@@ -31,10 +31,26 @@ for mod in ["akshare", "yfinance", "openai", "httpx", "lark_oapi", "fastapi"]:
 # 初始化数据库
 print(f"\n=== 数据库 ===")
 try:
-    from database import init_database
+    from database import init_database, get_all_funds, add_fund
     os.makedirs("data", exist_ok=True)
     init_database()
     print("DB OK")
+
+    # 自动从 funds.json 初始化持仓（首次或数据库为空时）
+    funds = get_all_funds()
+    if not funds:
+        import json
+        fund_json = os.path.join(os.path.dirname(__file__), "funds.json")
+        if os.path.exists(fund_json):
+            with open(fund_json, "r", encoding="utf-8") as f:
+                entries = json.load(f)
+            for e in entries:
+                add_fund(e["fund_code"], e["fund_name"], e["market"], e.get("fund_type", ""))
+            print(f"Seeded {len(entries)} funds from funds.json")
+        else:
+            print("WARNING: funds.json not found, no funds to analyze")
+    else:
+        print(f"Found {len(funds)} existing funds")
 except Exception:
     traceback.print_exc()
     sys.exit(1)

@@ -1,0 +1,8 @@
+[
+  {"fund_code": "006479", "fund_name": "广发纳斯达克100ETF联接C", "market": "美股", "fund_type": "QDII"},
+  {"fund_code": "012920", "fund_name": "易方达全球成长精选混合A", "market": "全球", "fund_type": "QDII"},
+  {"fund_code": "017437", "fund_name": "华宝纳斯达克精选股票C", "market": "美股", "fund_type": "QDII"},
+  {"fund_code": "016665", "fund_name": "天弘全球高端制造混合C", "market": "全球", "fund_type": "QDII"},
+  {"fund_code": "005698", "fund_name": "华夏全球科技先锋混合A", "market": "全球", "fund_type": "QDII"},
+  {"fund_code": "016371", "fund_name": "信澳业绩驱动混合C", "market": "A股", "fund_type": "混合型"}
+]
