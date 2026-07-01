@@ -1,0 +1,60 @@
+# GitHub Actions: 每日基金分析定时任务
+# 北京时间每个交易日早上7:00执行
+# 参考: daily_stock_analysis 项目的调度方式
+name: 每日基金分析
+
+on:
+  schedule:
+    # 北京时间 7:00 = UTC 23:00 (前一天)
+    # 周一到周五执行，使用57分避免整点拥堵
+    - cron: '57 22 * * 0-4'    # 北京时间周一~周五 6:57
+    - cron: '57 23 * * 0-4'    # 北京时间周一~周五 7:57 (夏令时备选)
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      force:
+        description: '强制执行（跳过交易日检查）'
+        required: false
+        default: 'false'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install -r fund-bot/requirements.txt
+
+      - name: 运行每日分析
+        working-directory: fund-bot
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_USER_OPEN_ID: ${{ secrets.FEISHU_USER_OPEN_ID }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          FORCE_ANALYSIS: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          python -c "
+          import os, sys
+          sys.path.insert(0, '.')
+          from database import init_database
+          from orchestrator import orchestrator
+          init_database()
+          force = os.environ.get('FORCE_ANALYSIS', 'false').lower() == 'true'
+          orchestrator.run_daily_analysis(force=force)
+          "
+
+      - name: 分析完成通知
+        if: always()
+        run: echo "基金分析流程已结束"
